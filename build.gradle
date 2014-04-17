@@ -1,0 +1,41 @@
+apply plugin: 'war'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "http://repository.codehaus.org"
+        url "http://snapshots.repository.codehaus.org"
+    }
+}
+
+def excludeJars = {
+    // DSLの評価をするのは呼び出し元のdelegateなので、引数に渡してもらってそれを使う。
+    delegate = it
+
+    exclude group: 'commons-cli', module: 'commons-cli'
+}
+
+dependencies {
+    runtime (project(':subproject-a')) {
+        //exclude group: 'commons-cli', module: 'commons-cli'
+        excludeJars(delegate)
+    }
+    runtime (project(':subproject-b')) {
+        // 複数のサブプロジェクトで同じjarに依存している場合、それぞれに除外設定が必要になる。
+        // ただし、Groovyなのでこの除外設定を共通化しておいて一行書くだけというのも可能。
+        //exclude group: 'commons-cli', module: 'commons-cli'
+        excludeJars(delegate)
+
+        // spock-coreの依存先も除外される
+        //exclude module: 'spock-core'
+
+        // spock-coreは依存するけど、その先のjunit-depは要らない、という除外も可能
+        //exclude module: 'junit-dep'
+        //exclude module: 'hamcrest-core'
+    }
+    compile 'org.codehaus.groovy:groovy-all:2.1.6'
+
+}
+
+war {
+}

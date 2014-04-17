@@ -1,0 +1,9 @@
+apply plugin: 'java'
+
+dependencies {
+    runtime 'org.spockframework:spock-core:0.7-groovy-2.0'
+
+    // あえてsubproject-aと同じものを入れておく
+    runtime 'commons-cli:commons-cli:1.2'
+}
+

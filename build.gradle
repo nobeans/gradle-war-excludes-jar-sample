@@ -8,23 +8,19 @@ repositories {
     }
 }
 
-def excludeJars = {
-    // DSLの評価をするのは呼び出し元のdelegateなので、引数に渡してもらってそれを使う。
-    delegate = it
-
-    exclude group: 'commons-cli', module: 'commons-cli'
+configurations {
+    // 一括で除外できるが、runtimeに依存するtestRuntimeからも除外される。
+    //runtime.exclude module: 'spock-core'
 }
 
 dependencies {
     runtime (project(':subproject-a')) {
         //exclude group: 'commons-cli', module: 'commons-cli'
-        excludeJars(delegate)
+        //excludeJars(delegate)
     }
     runtime (project(':subproject-b')) {
         // 複数のサブプロジェクトで同じjarに依存している場合、それぞれに除外設定が必要になる。
-        // ただし、Groovyなのでこの除外設定を共通化しておいて一行書くだけというのも可能。
         //exclude group: 'commons-cli', module: 'commons-cli'
-        excludeJars(delegate)
 
         // spock-coreの依存先も除外される
         //exclude module: 'spock-core'

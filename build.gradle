@@ -9,64 +9,22 @@ repositories {
 }
 
 configurations {
-    // 一括で除外できるが、runtimeに依存するtestRuntimeからも除外される。
-    //runtime.exclude module: 'spock-core'
+    // まずはwarで不要なものをruntimeから除外してしまう。
 
+    //runtime.exclude group: 'commons-cli', module: 'commons-cli'
 
-    excludeFromWar
+    // spock-coreの依存先も除外される
+    runtime.exclude module: 'spock-core'
 }
 
 dependencies {
-    runtime (project(':subproject-a')) {
-        //exclude group: 'commons-cli', module: 'commons-cli'
-        //excludeJars(delegate)
-    }
-    runtime (project(':subproject-b')) {
-        // 複数のサブプロジェクトで同じjarに依存している場合、それぞれに除外設定が必要になる。
-        //exclude group: 'commons-cli', module: 'commons-cli'
-
-        // spock-coreの依存先も除外される
-        //exclude module: 'spock-core'
-
-        // spock-coreは依存するけど、その先のjunit-depは要らない、という除外も可能
-        //exclude module: 'junit-dep'
-        //exclude module: 'hamcrest-core'
-    }
+    runtime project(':subproject-a')
+    runtime project(':subproject-b')
     runtime 'org.codehaus.groovy:groovy-all:2.1.6'
 
-    // warタスクでの自前フィルタリングで、推移的依存関係を全て列挙したくないので、
-    // このように除外目的のconfigurationsを作ってしまうと楽な気がする。
-    excludeFromWar 'org.codehaus.groovy:groovy-all:2.1.6'
-    //excludeFromWar 'commons-cli:commons-cli:1.2'
-    excludeFromWar 'org.spockframework:spock-core:0.7-groovy-2.0'
+    // warには不要であるがruntime/testRuntimeで必要なJarをあらためてprovidedRuntimeで宣言しなおす。
+    providedRuntime 'org.codehaus.groovy:groovy-all:2.1.6'
+    providedRuntime 'org.spockframework:spock-core:0.7-groovy-2.0'
+    //providedRuntime 'commons-cli:commons-cli:1.2'
 }
 
-war {
-    // 確認
-    println "---Before"
-    classpath.each { println it }
-    println "---"
-
-    // と設定してもなぜかwarから除外されない。
-    // Ant式ワイルドカードを書いてみても駄目。
-    //excludes = ["**/*groovy*"]
-
-    // 自前でフィルタリングすると一応除外できた。
-    // この場合、推移的依存関係は使えないのですべての除外Jarを指定しなければならない。
-    //def myExcludes = ["groovy-all", "spock-core"]
-    //classpath = classpath.collect { file ->
-    //    // 除外リスト内のパタンと部分一致に入っているものはnullにしておいて後でfindAllで除外する。
-    //    myExcludes.any { file =~ it } ? null : file
-    //}.findAll { it } // null除外
-
-    // 推移的依存関係を自動的に辿れるように除外用のconfigurationsを作ると便利。
-    classpath = classpath.collect { file ->
-        // 除外リスト内のパタンと部分一致に入っているものはnullにしておいて後でfindAllで除外する。
-        configurations.excludeFromWar.contains(file) ? null : file
-    }.findAll { it } // null除外
-
-    // 確認
-    println "---After"
-    classpath.each { println it }
-    println "---"
-}

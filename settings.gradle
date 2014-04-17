@@ -1,1 +1,1 @@
-include 'subproject-a', 'subproject-b'
+include 'subproject-a'

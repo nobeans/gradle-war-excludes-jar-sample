@@ -1,4 +1,5 @@
 apply plugin: 'war'
+apply plugin: 'groovy'
 
 repositories {
     mavenCentral()
@@ -20,11 +21,9 @@ configurations {
 }
 
 dependencies {
-    runtime project(':subproject-a')
-    runtime project(':subproject-b')
-    runtime 'org.codehaus.groovy:groovy-all:2.1.6'
+    compile project(':subproject-a')
 
-    // warには不要であるがruntime/testRuntimeで必要なJarをあらためてprovidedRuntimeで宣言しなおす。
-    excludesFromWar.each { providedRuntime "${it.group}:${it.module}:${it.version}" }
+    // warには不要であるがtestRuntimeで必要なJarをあらためて追加する。
+    excludesFromWar.each { testCompile "${it.group}:${it.module}:${it.version}" }
 }
 

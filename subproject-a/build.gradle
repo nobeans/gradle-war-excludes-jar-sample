@@ -1,6 +1,15 @@
-apply plugin: 'java'
+apply plugin: 'groovy'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "http://repository.codehaus.org"
+        url "http://snapshots.repository.codehaus.org"
+    }
+}
 
 dependencies {
-    runtime 'commons-cli:commons-cli:1.2'
+    compile 'org.codehaus.groovy:groovy-all:2.1.6'
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
 }
 

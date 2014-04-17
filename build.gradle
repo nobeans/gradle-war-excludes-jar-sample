@@ -8,13 +8,15 @@ repositories {
     }
 }
 
+// こうして一元管理もできる。そう、Groovyならね。
+def excludesFromWar = [
+    [group: 'org.codehaus.groovy', module: 'groovy-all', version: '2.1.6'],
+    [group: 'org.spockframework', module: 'spock-core', version: '0.7-groovy-2.0'],
+]
+
 configurations {
     // まずはwarで不要なものをruntimeから除外してしまう。
-
-    //runtime.exclude group: 'commons-cli', module: 'commons-cli'
-
-    // spock-coreの依存先も除外される
-    runtime.exclude module: 'spock-core'
+    excludesFromWar.each { runtime.exclude it }
 }
 
 dependencies {
@@ -23,8 +25,6 @@ dependencies {
     runtime 'org.codehaus.groovy:groovy-all:2.1.6'
 
     // warには不要であるがruntime/testRuntimeで必要なJarをあらためてprovidedRuntimeで宣言しなおす。
-    providedRuntime 'org.codehaus.groovy:groovy-all:2.1.6'
-    providedRuntime 'org.spockframework:spock-core:0.7-groovy-2.0'
-    //providedRuntime 'commons-cli:commons-cli:1.2'
+    excludesFromWar.each { providedRuntime "${it.group}:${it.module}:${it.version}" }
 }
 

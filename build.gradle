@@ -34,4 +34,25 @@ dependencies {
 }
 
 war {
+    // 確認
+    println "---Before"
+    classpath.each { println it }
+    println "---"
+
+    // と設定してもなぜかwarから除外されない。
+    // Ant式ワイルドカードを書いてみても駄目。
+    //excludes = ["**/*groovy*"]
+
+    // 自前でフィルタリングすると一応除外できた。
+    // この場合、推移的依存関係は使えないのですべての除外Jarを指定しなければならない。
+    def myExcludes = ["groovy-all", "spock-core"]
+    classpath = classpath.collect { file ->
+        // 除外リスト内のパタンと部分一致に入っているものはnullにしておいて後でfindAllで除外する。
+        myExcludes.any { file =~ it } ? null : file
+    }.findAll { it } // null除外
+
+    // 確認
+    println "---After"
+    classpath.each { println it }
+    println "---"
 }

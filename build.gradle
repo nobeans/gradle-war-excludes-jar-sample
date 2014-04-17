@@ -11,6 +11,9 @@ repositories {
 configurations {
     // 一括で除外できるが、runtimeに依存するtestRuntimeからも除外される。
     //runtime.exclude module: 'spock-core'
+
+
+    excludeFromWar
 }
 
 dependencies {
@@ -29,8 +32,13 @@ dependencies {
         //exclude module: 'junit-dep'
         //exclude module: 'hamcrest-core'
     }
-    compile 'org.codehaus.groovy:groovy-all:2.1.6'
+    runtime 'org.codehaus.groovy:groovy-all:2.1.6'
 
+    // warタスクでの自前フィルタリングで、推移的依存関係を全て列挙したくないので、
+    // このように除外目的のconfigurationsを作ってしまうと楽な気がする。
+    excludeFromWar 'org.codehaus.groovy:groovy-all:2.1.6'
+    //excludeFromWar 'commons-cli:commons-cli:1.2'
+    excludeFromWar 'org.spockframework:spock-core:0.7-groovy-2.0'
 }
 
 war {
@@ -45,10 +53,16 @@ war {
 
     // 自前でフィルタリングすると一応除外できた。
     // この場合、推移的依存関係は使えないのですべての除外Jarを指定しなければならない。
-    def myExcludes = ["groovy-all", "spock-core"]
+    //def myExcludes = ["groovy-all", "spock-core"]
+    //classpath = classpath.collect { file ->
+    //    // 除外リスト内のパタンと部分一致に入っているものはnullにしておいて後でfindAllで除外する。
+    //    myExcludes.any { file =~ it } ? null : file
+    //}.findAll { it } // null除外
+
+    // 推移的依存関係を自動的に辿れるように除外用のconfigurationsを作ると便利。
     classpath = classpath.collect { file ->
         // 除外リスト内のパタンと部分一致に入っているものはnullにしておいて後でfindAllで除外する。
-        myExcludes.any { file =~ it } ? null : file
+        configurations.excludeFromWar.contains(file) ? null : file
     }.findAll { it } // null除外
 
     // 確認

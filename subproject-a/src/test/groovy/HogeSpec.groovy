@@ -4,6 +4,6 @@ class HogeSpec extends Specification {
 
     def "hoge"() {
         expect:
-        new Hoge().hoge() == "Hoge!"
+        new Hoge().hoge() == "Hoge: Foo"
     }
 }

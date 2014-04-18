@@ -10,20 +10,39 @@ repositories {
 }
 
 // こうして一元管理もできる。そう、Groovyならね。
-def excludesFromWar = [
-    [group: 'org.codehaus.groovy', module: 'groovy-all', version: '2.1.6'],
-    [group: 'org.spockframework', module: 'spock-core', version: '0.7-groovy-2.0'],
+def shouldExcludesFromWar = [
+    [group: 'org.apache.commons', module: 'commons-lang3', version: '3.3.1'],
 ]
+
+def excludesFromWar = {
+    // configurationsの代わりに個別にexcludeすれば、
+    // このプロジェクト自体のtestCompile/testRuntimeへの追加は意図通りに動作する。
+    shouldExcludesFromWar.each { exclude module: it.module }
+}
 
 configurations {
     // まずはwarで不要なものをruntimeから除外してしまう。
-    excludesFromWar.each { runtime.exclude it }
+    // その後dependenciesで、warには不要であるがtestRuntimeで必要なJarをあらためて追加する。
+    //
+    // と思ったが、実際には動かない。
+    // configurationsでのexcludeは、dependenciesでの結果に対してかかるので
+    // 結局runtime系であるtestRuntimeからも除外されてしまう...。
+    // "runtime"から除外しているのに、その効果が"testRuntime"にも出てしまう点が嫌な感じ...。
+    //excludesFromWar.each { runtime.exclude it }
 }
 
 dependencies {
-    compile project(':subproject-a')
+    compile project(':subproject-a'), excludesFromWar
+    compile 'org.codehaus.groovy:groovy-all:2.1.6'
+    testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
 
-    // warには不要であるがtestRuntimeで必要なJarをあらためて追加する。
-    excludesFromWar.each { testCompile "${it.group}:${it.module}:${it.version}" }
+    // warには不要であるがtestCompile/testRuntimeで必要なJarをあらためて追加する。
+    shouldExcludesFromWar.each { 
+        // test配下の実行時だけ必要な場合
+        testRuntime "${it.group}:${it.module}:${it.version}"
+
+        // test配下のコンパイル時も必要な場合
+        //testCompile "${it.group}:${it.module}:${it.version}"
+    }
 }
 

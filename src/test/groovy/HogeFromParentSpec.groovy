@@ -4,6 +4,6 @@ class HogeFromParentSpec extends Specification {
 
     def "hoge from parent"() {
         expect:
-        new Hoge().hoge() == "Hoge!?"
+        new Hoge().hoge() == "Hoge: Foo"
     }
 }
